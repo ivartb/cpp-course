@@ -234,7 +234,7 @@ big_integer &big_integer::operator/=(big_integer const &rhs) {
 	int m = data.size() - n;
 	for (long long i = m - 1; i >= 0; i--)
 	{
-		unsigned long long qc = (data[n + i] * 1ull * base + 1ull * data[n + i - 1]);
+		unsigned long long qc = (data[n + i] * 1ull * base + 1ull * data[n + i - 1]);//error n=201 i=0 data=0 -- fixed
 		qc /= (1ull * (b.data[n - 1]));
 		if (data.size() == 1 && data[0] == 0)
 		{
@@ -260,6 +260,8 @@ big_integer &big_integer::operator/=(big_integer const &rhs) {
 			*this -= y;
 		}
 		ans.data.push_back(qc);
+		if (*this == 0)//error in dividing fixed
+			break;
 	}
 	std::reverse(ans.data.begin(), ans.data.end());
 	*this = ans;
