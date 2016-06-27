@@ -1,4 +1,5 @@
 #include "big_integer.h"
+#include <assert.h>
 
 const big_integer ZERO = big_integer(0);
 const big_integer ONE = big_integer(1);
@@ -234,6 +235,8 @@ big_integer &big_integer::operator/=(big_integer const &rhs) {
 	int m = data.size() - n;
 	for (long long i = m - 1; i >= 0; i--)
 	{
+		if (n + i >= data.size())//error in dividing fixed
+			break;
 		unsigned long long qc = (data[n + i] * 1ull * base + 1ull * data[n + i - 1]);//error n=201 i=0 data=0 -- fixed
 		qc /= (1ull * (b.data[n - 1]));
 		if (data.size() == 1 && data[0] == 0)
