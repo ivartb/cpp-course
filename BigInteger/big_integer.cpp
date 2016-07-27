@@ -1,8 +1,12 @@
 #include "big_integer.h"
 #include <assert.h>
-238 296 336
+#include <algorithm>
+
 const big_integer ZERO = big_integer(0);
 const big_integer ONE = big_integer(1);
+const big_integer BASE = big_integer("4294967295");
+big_integer base_pow[100000] = {ONE};
+int counter = 1;
 
 big_integer::big_integer(): sign(1)
 {
@@ -29,7 +33,7 @@ big_integer::big_integer(long long a)
 	if (a < 0)
 		a = -a;
 	data.push_back(a % base);
-	data.push_back(a / base);
+	data.push_back((unsigned)(a / base));
 	while (data.size() > 1 && data.back() == 0)
 		data.pop_back();
 }
@@ -85,7 +89,7 @@ big_integer &big_integer::operator+=(big_integer const &rhs)
 				data.push_back(0);
 			unsigned long long tmp = 1ull * data[i] + carry + (i < rhs.data.size() ? rhs.data[i] : 0);
 			data[i] = tmp % base;
-			carry = tmp / base;
+			carry = (int)(tmp / base);
 		}
 		while (data.size() > 1 && data.back() == 0)
 			data.pop_back();
@@ -131,7 +135,7 @@ big_integer &big_integer::operator-=(big_integer const &rhs) {
 		carry = tmp < 0;
 		if (carry)
 			tmp += base;
-		data[i] = tmp;
+		data[i] = (unsigned)tmp;
 	}
 	while (data.size() > 1 && data.back() == 0)
 		data.pop_back();
@@ -209,14 +213,14 @@ big_integer &big_integer::operator/=(big_integer const &rhs) {
 		*this = ans;
 		return *this;
 	}
-
+	
 	if (b.data.size() == 1)
 	{
 		unsigned long long carry = 0;
 		for (int i = (int) data.size() - 1; i >= 0; i--)
 		{
 			unsigned long long tmp = 1ull * data[i] + carry * 1ull * base;
-			data[i] = tmp / (1ull * b.data[0]);
+			data[i] = (unsigned)(tmp / (1ull * b.data[0]));
 			carry = tmp % (1ull * b.data[0]);
 		}
 		while (data.size() > 1 && data.back() == 0)
@@ -225,7 +229,7 @@ big_integer &big_integer::operator/=(big_integer const &rhs) {
 		return *this;
 	}
 
-	if (b.data.back() <= base / 2)
+	if (b.data.back() < base / 2)
 	{
 		long long sc = base / (b.data.back() + 1);
 		*this *= sc;
@@ -233,40 +237,40 @@ big_integer &big_integer::operator/=(big_integer const &rhs) {
 	}
 	int n = b.data.size();
 	int m = data.size() - n;
-	for (long long i = m - 1; i >= 0; i--)
+	ans.data.resize(m + 1);
+
+	for (int i = counter; i <= m; i++)
+		base_pow[i] = base_pow[i - 1] * BASE;
+	counter = m + 1;
+
+
+	if (*this > base_pow[m] * b)
 	{
-		if (n + i >= (int) data.size())//error in dividing fixed
-			break;
-		unsigned long long qc = (data[n + i] * 1ull * base + 1ull * data[n + i - 1]);//error n=201 i=0 data=0 -- fixed
-		qc /= (1ull * (b.data[n - 1]));
-		if (data.size() == 1 && data[0] == 0)
+		ans.data[m] = 1;
+		*this -= base_pow[m] * b;
+	}
+	else
+	{
+		ans.data[m] = 0;
+	}
+
+	for (int j = m - 1; j >= 0; j--)
+	{
+		unsigned long long qc = data[n + j] * 1ull * base + data[n + j - 1];
+		qc /= 1ull * b.data[n - 1];
+		ans.data[j] = (unsigned)(qc < (base - 1) ? qc : (base - 1));
+		big_integer tmp = base_pow[j] * b;
+		
+		*this -= ((long long)ans.data[j]) * tmp;
+		while (*this < 0)
 		{
-			qc = 0;
-			ans.data.push_back(qc);
-			continue;
+			ans.data[j]--;
+			*this += tmp;
 		}
-		if (qc >= base) 
-		{
-			i++;
-			qc /= base;
-			qc++;
-		}
-		big_integer y = (b * (long long) qc);
-		y <<= (i * 32);
-		*this -= y;
-		while (sign < 0)
-		{
-			*this += y;
-			qc--;
-			y = b * (long long) qc;
-			y <<= (i * 32);
-			*this -= y;
-		}
-		ans.data.push_back(qc);
-		if (*this == 0)//error in dividing fixed
+		if (*this == 0)
 			break;
 	}
-	std::reverse(ans.data.begin(), ans.data.end());
+
 	*this = ans;
 	while (data.size() > 1 && data.back() == 0)
 		data.pop_back();
@@ -293,7 +297,7 @@ big_integer &big_integer::operator<<=(int rhs) {
 	if (sign < 0)
 		toAddCode();
 	
-	//size_t s = data.size();
+	size_t s = data.size();
 
 	unsigned int t = rhs / 32;
 	unsigned rem = rhs - t * 32;
@@ -333,7 +337,7 @@ big_integer &big_integer::operator>>=(int rhs) {
 	if (sign < 0)
 		toAddCode();
 	
-	//size_t s = data.size();
+	size_t s = data.size();
 
 	unsigned int t = rhs / 32;
 	unsigned rem = rhs - t * 32;
