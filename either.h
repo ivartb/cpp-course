@@ -63,7 +63,7 @@ struct either
 
 	either(either const& other) : which(getRealType(other.which))
 	{
-		if (other.isLeft())
+		if (other.is_left())
 			new (&data) Left(other.left());
 		else
 			new (&data) Right(other.right());
@@ -71,7 +71,7 @@ struct either
 
 	either(either && other) : which(getRealType(other.which))
 	{
-		if (other.isLeft())
+		if (other.is_left())
 			new (&data) Left(std::move(other.left()));
 		else
 			new (&data) Right(std::move(other.right()));
@@ -84,21 +84,21 @@ struct either
 
 	either& operator=(either other)
 	{
-		if (other.isLeft())
+		if (other.is_left())
 			emplace(emplace_left, other.left());
 		else
 			emplace(emplace_right, other.right());
 		return *this;
 	};
 
-	bool isLeft() const
+	bool is_left() const
 	{
 		return getRealType(which) == LEFT;
 	};
 
 	Left& left()
 	{
-		assert(isLeft());
+		assert(is_left());
 		if (which == LEFT)
 			return *reinterpret_cast<Left*>(&data);
 		return **reinterpret_cast<std::unique_ptr<Left>*>(&data);
@@ -106,20 +106,20 @@ struct either
 
 	Left const& left() const
 	{
-		assert(isLeft());
+		assert(is_left());
 		if (which == LEFT)
 			return *reinterpret_cast<Left const*>(&data);
 		return **reinterpret_cast<std::unique_ptr<const Left> const*>(&data);
 	};
 
-	bool isRight() const
+	bool is_right() const
 	{
 		return getRealType(which) == RIGHT;
 	};
 
 	Right& right()
 	{
-		assert(isRight());
+		assert(is_right());
 		if (which == RIGHT)
 			return *reinterpret_cast<Right*>(&data);
 		return **reinterpret_cast<std::unique_ptr<Right>*>(&data);
@@ -127,7 +127,7 @@ struct either
 
 	Right const& right() const
 	{
-		assert(isRight());
+		assert(is_right());
 		if (which == RIGHT)
 			return *reinterpret_cast<Right const*>(&data);
 		return **reinterpret_cast<std::unique_ptr<const Right> const*>(&data);
@@ -234,7 +234,7 @@ private:
 template <typename F, typename Left, typename Right>
 auto apply(F const& f, either<Left, Right> const& e)
 {
-	if (e.isLeft())
+	if (e.is_left())
 		return f(e.left());
 	else
 		return f(e.right());
@@ -243,7 +243,7 @@ auto apply(F const& f, either<Left, Right> const& e)
 template <typename F, typename Left, typename Right>
 auto apply(F const& f, either<Left, Right>& e)
 {
-	if (e.isLeft())
+	if (e.is_left())
 		return f(e.left());
 	else
 		return f(e.right());
@@ -252,11 +252,11 @@ auto apply(F const& f, either<Left, Right>& e)
 template <typename Left, typename Right>
 void swap(either<Left, Right>& a, either<Left, Right>& b)
 {
-	if (a.isLeft() && b.isLeft())
+	if (a.is_left() && b.is_left())
 		swapper(a, b, std::make_unique<Left>(a.left()), std::make_unique<Left>(b.left()), LEFT, LEFT);
-	else if (a.isRight() && b.isLeft())
+	else if (a.is_right() && b.is_left())
 		swapper(a, b, std::make_unique<Right>(a.right()), std::make_unique<Left>(b.left()), RIGHT, LEFT);
-	else if (a.isLeft() && b.isRight())
+	else if (a.is_left() && b.is_right())
 		swapper(a, b, std::make_unique<Left>(a.left()), std::make_unique<Right>(b.right()), LEFT, RIGHT);
 	else
 		swapper(a, b, std::make_unique<Right>(a.right()), std::make_unique<Right>(b.right()), RIGHT, RIGHT);
