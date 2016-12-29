@@ -71,6 +71,7 @@ struct either
 
 	either(either && other) 
 	{
+		which = getRealType(other.which);
 		if (other.is_left())
 			emplace(emplace_left, other.left());
 		else
@@ -179,8 +180,8 @@ private:
 		std::max(alignof(Left), std::max(alignof(Right), alignof(std::unique_ptr<Left>))) > ::type data_type;
 	data_type data;
 
-	template <typename Left, typename Right, typename Lhs, typename Rhs>
-	friend void swapper(either<Left, Right>& a, either<Left, Right>& b,
+	template <typename Left1, typename Right1, typename Lhs, typename Rhs>
+	friend void swapper(either<Left1, Right1>& a, either<Left1, Right1>& b,
 						std::unique_ptr<Lhs> left_data, std::unique_ptr<Rhs> right_data,
 						type const& left_type, type const& right_type);
 
@@ -282,4 +283,4 @@ void swapper(either<Left, Right>& a, either<Left, Right>& b,
 	}
 };
 
-#endif EITHER_H
+#endif //EITHER_H
