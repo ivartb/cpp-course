@@ -1,5 +1,6 @@
 #include "opt_vector.h"
 #include <assert.h>
+#include <algorithm>
 
 opt_vector::opt_vector() : sz(0), n(0) {}
 
@@ -115,17 +116,17 @@ size_t opt_vector::size() const
 	return sz;
 }
 
-unsigned const& opt_vector::operator[](int i) const
+unsigned const& opt_vector::operator[](size_t i) const
 {
-	assert(i >= 0 && i < sz);
+	assert(i < sz);
 	if (sz < 2)
 		return n;
 	return (*v)[i];
 }
 
-unsigned& opt_vector::operator[](int i)
+unsigned& opt_vector::operator[](size_t i)
 {
-	assert(i >= 0 && i < sz);
+	assert(i < sz);
 	if (!v.unique())
 		makeCopy();
 	if (sz < 2)

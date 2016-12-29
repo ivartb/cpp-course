@@ -296,7 +296,7 @@ big_integer &big_integer::operator<<=(int rhs) {
 	if (sign < 0)
 		toAddCode();
 	
-	size_t s = data.size();
+	//size_t s = data.size();
 
 	unsigned int t = rhs / 32;
 	unsigned rem = rhs - t * 32;
@@ -336,7 +336,7 @@ big_integer &big_integer::operator>>=(int rhs) {
 	if (sign < 0)
 		toAddCode();
 	
-	size_t s = data.size();
+	//size_t s = data.size();
 
 	unsigned int t = rhs / 32;
 	unsigned rem = rhs - t * 32;

@@ -26,9 +26,9 @@ struct opt_vector
 
 	size_t size() const;//done
 
-	unsigned const& operator[](int i) const;//done
+	unsigned const& operator[](size_t i) const;//done
 
-	unsigned& operator[](int i);//done
+	unsigned& operator[](size_t i);//done
 
 	unsigned const& back() const;//done
 
