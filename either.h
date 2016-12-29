@@ -69,12 +69,12 @@ struct either
 			new (&data) Right(other.right());
 	};
 
-	either(either && other) : which(getRealType(other.which))
+	either(either && other) 
 	{
 		if (other.is_left())
-			new (&data) Left(std::move(other.left()));
+			emplace(emplace_left, other.left());
 		else
-			new (&data) Right(std::move(other.right()));
+			emplace(emplace_right, other.right());
 	};
 
 	~either()
@@ -98,7 +98,6 @@ struct either
 
 	Left& left()
 	{
-		assert(is_left());
 		if (which == LEFT)
 			return *reinterpret_cast<Left*>(&data);
 		return **reinterpret_cast<std::unique_ptr<Left>*>(&data);
@@ -106,7 +105,6 @@ struct either
 
 	Left const& left() const
 	{
-		assert(is_left());
 		if (which == LEFT)
 			return *reinterpret_cast<Left const*>(&data);
 		return **reinterpret_cast<std::unique_ptr<const Left> const*>(&data);
@@ -119,7 +117,6 @@ struct either
 
 	Right& right()
 	{
-		assert(is_right());
 		if (which == RIGHT)
 			return *reinterpret_cast<Right*>(&data);
 		return **reinterpret_cast<std::unique_ptr<Right>*>(&data);
@@ -127,7 +124,6 @@ struct either
 
 	Right const& right() const
 	{
-		assert(is_right());
 		if (which == RIGHT)
 			return *reinterpret_cast<Right const*>(&data);
 		return **reinterpret_cast<std::unique_ptr<const Right> const*>(&data);
