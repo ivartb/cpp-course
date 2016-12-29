@@ -69,9 +69,8 @@ struct either
 			new (&data) Right(other.right());
 	};
 
-	either(either && other) 
+	either(either && other) : which(getRealType(other.which))
 	{
-		which = getRealType(other.which);
 		if (other.is_left())
 			emplace(emplace_left, other.left());
 		else
